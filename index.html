@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kalkulator Preliminary Sizing Portal Frame PEB (AISC DG25)</title>
+<style>
+:root{
+  --bg:#f4f6fa; --card:#ffffff; --ink:#1b2430; --mute:#5b6675; --line:#d9e0ea;
+  --brand:#1f4e78; --brand2:#2f5496; --soft:#e8eef7; --ok:#1e7a46; --okbg:#e3f4ea; --bad:#b3261e; --badbg:#fbe7e5; --warn:#8a5a00; --warnbg:#fff3d6;
+  --input:#fffbe6;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#10151c; --card:#171e28; --ink:#e6ebf2; --mute:#98a3b3; --line:#2b3544; --brand:#6fa8dc; --brand2:#8ab4e8; --soft:#1e2938;
+    --ok:#6fd49a; --okbg:#173326; --bad:#ff8a80; --badbg:#3a1d1b; --warn:#f0c15a; --warnbg:#3a2f12; --input:#2a2610; }
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{background:var(--brand);color:#fff;padding:20px 20px 0}
+@media (prefers-color-scheme: dark){header{background:#1c3a57}}
+header h1{margin:0;font-size:clamp(18px,3.2vw,26px);letter-spacing:.2px}
+header p{margin:4px 0 14px;opacity:.85;font-size:13px}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;max-width:1200px;margin:0 auto}
+.tab{appearance:none;border:0;background:rgba(255,255,255,.12);color:#fff;padding:9px 16px;border-radius:8px 8px 0 0;font:inherit;cursor:pointer}
+.tab[aria-selected="true"]{background:var(--bg);color:var(--ink);font-weight:600}
+.hwrap{max-width:1200px;margin:0 auto}
+main{max-width:1200px;margin:0 auto;padding:18px 16px 60px}
+.grid{display:grid;grid-template-columns:340px minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
+.card h2{margin:0 0 10px;font-size:15px;color:var(--brand);text-transform:uppercase;letter-spacing:.5px}
+.field{margin-bottom:12px}
+.field label{display:block;font-weight:600;font-size:13px}
+.field .note{color:var(--mute);font-size:12px}
+.inrow{display:flex;gap:8px;align-items:center;margin-top:4px}
+.inrow input{flex:1;min-width:0;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--input);color:var(--ink);font:inherit;font-variant-numeric:tabular-nums}
+.inrow input:focus{outline:2px solid var(--brand2);outline-offset:1px}
+.inrow input.invalid{border-color:var(--bad);background:var(--badbg)}
+.unit{color:var(--mute);min-width:44px;font-size:13px}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+button.b{appearance:none;border:1px solid var(--brand);background:var(--brand);color:#fff;padding:8px 14px;border-radius:8px;font:inherit;cursor:pointer}
+button.b.sec{background:transparent;color:var(--brand)}
+button.b.sm{padding:4px 10px;font-size:13px}
+button.b.danger{border-color:var(--bad);color:var(--bad);background:transparent}
+button.b:disabled{opacity:.5;cursor:not-allowed}
+button.b:focus-visible{outline:2px solid var(--brand2);outline-offset:2px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.kpi .l{font-size:12px;color:var(--mute)}
+.kpi .v{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--brand)}
+.kpi .u{font-size:12px;color:var(--mute)}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+th{background:var(--brand);color:#fff;font-weight:600;white-space:normal}
+@media (prefers-color-scheme: dark){th{background:#24415f}}
+td.n{text-align:right;font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+td.c{text-align:center}
+tr.grp td{background:var(--soft);font-weight:700;color:var(--brand)}
+.sym{font-family:ui-monospace,Menlo,Consolas,monospace;color:var(--mute);font-size:12.5px}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}
+.badge.ok{background:var(--okbg);color:var(--ok)}
+.badge.bad{background:var(--badbg);color:var(--bad)}
+.warn{background:var(--warnbg);color:var(--warn);border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:13px}
+.saved{list-style:none;margin:0;padding:0}
+.saved li{border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:8px}
+.saved .t{font-weight:600}
+.saved .m{color:var(--mute);font-size:12px;margin:2px 0 6px}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#1b2430;color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90vw;z-index:9}
+.toast.show{opacity:1}
+.hl td{background:var(--warnbg)!important}
+.muted{color:var(--mute);font-size:13px}
+input.name{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font:inherit;margin-bottom:8px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<header>
+  <div class="hwrap">
+    <h1>Kalkulator Preliminary Sizing Portal Frame PEB</h1>
+    <p>Berbasis AISC Steel Design Guide 25: Frame Design Using Web-Tapered Members</p>
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" id="t0" aria-selected="true" data-tab="0">Kalkulator</button>
+      <button class="tab" role="tab" id="t1" aria-selected="false" data-tab="1">Tabel Referensi 16–50 m</button>
+      <button class="tab" role="tab" id="t2" aria-selected="false" data-tab="2">Panduan Teknis</button>
+    </div>
+  </div>
+</header>
+<main>
+  <section id="p0">
+    <div class="grid">
+      <div>
+        <div class="card">
+          <h2>1. Parameter Input</h2>
+          <div id="inputs"></div>
+          <div class="btns"><button class="b sec sm" id="reset" type="button">Reset ke default</button></div>
+        </div>
+        <div class="card">
+          <h2>Simpan &amp; Ekspor</h2>
+          <input class="name" id="saveName" type="text" placeholder="Nama desain, mis. Gudang A – 30 m" maxlength="80" aria-label="Nama desain">
+          <div class="btns">
+            <button class="b" id="save" type="button">Simpan hasil</button>
+            <button class="b sec" id="xlsx" type="button">Ekspor ke Excel</button>
+          </div>
+          <p class="muted" id="saveInfo" style="margin:10px 0 0"></p>
+        </div>
+        <div class="card">
+          <h2>Hasil Tersimpan</h2>
+          <ul class="saved" id="savedList"></ul>
+          <p class="muted hidden" id="noSaved">Belum ada hasil tersimpan.</p>
+          <div class="btns" id="savedBtns">
+            <button class="b sec sm" id="xlsxAll" type="button">Ekspor semua ke Excel</button>
+            <button class="b sec sm" id="jsonOut" type="button">Cadangkan (JSON)</button>
+            <button class="b sec sm" id="jsonIn" type="button">Impor (JSON)</button>
+            <input type="file" id="jsonFile" accept=".json,application/json" class="hidden">
+          </div>
+        </div>
+      </div>
+      <div>
+        <div id="rangeWarn" class="warn hidden"></div>
+        <div class="kpis" id="kpis"></div>
+        <div class="card">
+          <h2>2. Rekomendasi Dimensi Awal Elemen PEB</h2>
+          <div class="tw"><table id="tRes"></table></div>
+        </div>
+        <div class="card">
+          <h2>3. Check Kelangsingan Pelat &amp; Stabilitas</h2>
+          <div class="tw"><table id="tChk"></table></div>
+        </div>
+        <div class="card">
+          <h2>4. Estimasi Berat &amp; Tonase</h2>
+          <div class="tw"><table id="tWt"></table></div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section id="p1" class="hidden"><div class="card"><div class="tw"><table id="tRef"></table></div><p class="muted" id="refNote"></p></div></section>
+  <section id="p2" class="hidden"><div class="card"><div class="tw"><table id="tGuide"></table></div></div></section>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const DATA = [{"name": "Kalkulator PEB", "cells": {"A1": {"v": "KALKULATOR PRELIMINARY SIZING PORTAL FRAME PEB", "s": {"b": true, "i": false, "fc": "FFFFFF", "fs": 16.0, "fill": "1F4E78", "nf": "General", "wrap": false, "h": "left", "bd": false}}, "A2": {"v": "Berbasis AISC Steel Design Guide 25: Frame Design Using Web-Tapered Members | v1.0", "s": {"b": false, "i": true, "fc": "D9E1F2", "fs": 11.0, "fill": "1F4E78", "nf": "General", "wrap": false, "h": "left", "bd": false}}, "A4": {"v": "1. PARAMETER INPUT BANGUNAN (EDITABLE ASSUMPTIONS)", "s": {"b": true, "i": false, "fc": "FFFFFF", "fs": 12.0, "fill": "2F5496", "nf": "General", "wrap": false, "h": "left", "bd": false}}, "A5": {"v": "Bentang Portal Frame (Span, L)", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "B5": {"v": 30, "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": "DCE6F1", "nf": "0.0", "wrap": false, "h": "right", "bd": true}}, "C5": {"v": "m", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "D5": {"v": "Diukur dari as ke as kolom (16m - 50m)", "s": {"b": false, "i": true, "fc": "595959", "fs": 10.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "A6": {"v": "Tinggi Eaves / Lutut (H_eaves)", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "B6": {"v": 7, "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": "DCE6F1", "nf": "0.0", "wrap": false, "h": "right", "bd": true}}, "C6": {"v": "m", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "D6": {"v": "Tinggi kolom dari base plate ke eaves", "s": {"b": false, "i": true, "fc": "595959", "fs": 10.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "A7": {"v": "Jarak Antar Portal (Bay Spacing, S)", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "B7": {"v": 6, "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": "DCE6F1", "nf": "0.0", "wrap": false, "h": "right", "bd": true}}, "C7": {"v": "m", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "D7": {"v": "Jarak antar rafter/portal frame", "s": {"b": false, "i": true, "fc": "595959", "fs": 10.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "A8": {"v": "Kuat Leleh Baja (Fy)", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "B8": {"v": 345, "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": "DCE6F1", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "C8": {"v": "MPa", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "D8": {"v": "A572 Gr. 50 / SM490 (345 MPa)", "s": {"b": false, "i": true, "fc": "595959", "fs": 10.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "A9": {"v": "Modulus Elastisitas Baja (E)", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "B9": {"v": 200000, "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": "DCE6F1", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "C9": {"v": "MPa", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "D9": {"v": "Standar baja struktural", "s": {"b": false, "i": true, "fc": "595959", "fs": 10.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "A10": {"v": "Beban Rencana Atap Estimasi (q_roof)", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "B10": {"v": 0.8, "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": "DCE6F1", "nf": "0.0", "wrap": false, "h": "right", "bd": true}}, "C10": {"v": "kN/m²", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "D10": {"v": "Kombinasi Mati + Hidup Atap", "s": {"b": false, "i": true, "fc": "595959", "fs": 10.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "A12": {"v": "2. HASIL REKOMENDASI DIMENSI AWAL ELEMEN PEB (AISC DG25)", "s": {"b": true, "i": false, "fc": "FFFFFF", "fs": 12.0, "fill": "2F5496", "nf": "General", "wrap": false, "h": null, "bd": false}}, "A13": {"v": "Elemen / Parameter", "s": {"b": true, "i": false, "fc": "FFFFFF", "fs": 12.0, "fill": "1F4E78", "nf": "General", "wrap": true, "h": "center", "bd": true}}, "B13": {"v": "Simbol", "s": {"b": true, "i": false, "fc": "FFFFFF", "fs": 12.0, "fill": "1F4E78", "nf": "General", "wrap": true, "h": "center", "bd": true}}, "C13": {"v": "Nilai Formula", "s": {"b": true, "i": false, "fc": "FFFFFF", "fs": 12.0, "fill": "1F4E78", "nf": "General", "wrap": true, "h": "center", "bd": true}}, "D13": {"v": "Satuan", "s": {"b": true, "i": false, "fc": "FFFFFF", "fs": 12.0, "fill": "1F4E78", "nf": "General", "wrap": true, "h": "center", "bd": true}}, "E13": {"v": "Kriteria Rasio AISC DG25", "s": {"b": true, "i": false, "fc": "FFFFFF", "fs": 12.0, "fill": "1F4E78", "nf": "General", "wrap": true, "h": "center", "bd": true}}, "F13": {"v": "Status Keterangan", "s": {"b": true, "i": false, "fc": "FFFFFF", "fs": 12.0, "fill": "1F4E78", "nf": "General", "wrap": true, "h": "center", "bd": true}}, "G13": {"v": "Catatan Desain", "s": {"b": true, "i": false, "fc": "FFFFFF", "fs": 12.0, "fill": "1F4E78", "nf": "General", "wrap": true, "h": "center", "bd": true}}, "A14": {"v": "KOLOM: Tinggi Web Puncak (Knee)", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "B14": {"v": "h_knee", "s": {"b": false, "i": true, "fc": "595959", "fs": 10.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "C14": {"v": "=ROUND(B5*1000/37.5, -1)", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": "E2EFDA", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "D14": {"v": "mm", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "E14": {"v": "L / 35 s.d L / 40", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "F14": {"v": "Rekomendasi Utama", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "G14": {"v": "Tinggi web maksimum di pertemuam rafter", "s": {"b": false, "i": true, "fc": "595959", "fs": 10.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "A15": {"v": "KOLOM: Tinggi Web Pangkal Bawah", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "B15": {"v": "h_base", "s": {"b": false, "i": true, "fc": "595959", "fs": 10.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "C15": {"v": "=IF(B5\u003c=20, 250, IF(B5\u003c=35, 300, 350))", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": "E2EFDA", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "D15": {"v": "mm", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "E15": {"v": "250 mm - 350 mm", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "F15": {"v": "Sendi Base Plate", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "G15": {"v": "Ukuran terkecil untuk tumpuan sendi", "s": {"b": false, "i": true, "fc": "595959", "fs": 10.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "A16": {"v": "KOLOM: Lebar Flensa", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "B16": {"v": "b_f", "s": {"b": false, "i": true, "fc": "595959", "fs": 10.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "C16": {"v": "=ROUND(MAX(C14/7, B5*1000/135), -1)", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": "E2EFDA", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "D16": {"v": "mm", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "E16": {"v": "L / 120 - L / 150 (>= h/7)", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "F16": {"v": "Konstan Segmen", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "G16": {"v": "Lebar flensa dibuat seragam sepanjang segmen", "s": {"b": false, "i": true, "fc": "595959", "fs": 10.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "A17": {"v": "KOLOM: Tebal Flensa", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "B17": {"v": "t_f", "s": {"b": false, "i": true, "fc": "595959", "fs": 10.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "C17": {"v": "=IF(B5\u003c=20, 10, IF(B5\u003c=32, 12, IF(B5\u003c=40, 16, 20)))", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": "E2EFDA", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "D17": {"v": "mm", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "E17": {"v": "b_f / (2*t_f) \u003c= 18", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "F17": {"v": "Pelat Flensa", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "G17": {"v": "Memenuhi batas kelangsingan flensa", "s": {"b": false, "i": true, "fc": "595959", "fs": 10.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "A18": {"v": "KOLOM: Tebal Web", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "B18": {"v": "t_w", "s": {"b": false, "i": true, "fc": "595959", "fs": 10.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "C18": {"v": "=IF(B5\u003c=20, 6, IF(B5\u003c=36, 7, IF(B5\u003c=44, 8, 10)))", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": "E2EFDA", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "D18": {"v": "mm", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "E18": {"v": "h / t_w \u003c= 260", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "F18": {"v": "Pelat Web", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "G18": {"v": "Memenuhi batas kelangsingan web AISC", "s": {"b": false, "i": true, "fc": "595959", "fs": 10.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "A19": {"v": "RAFTER: Panjang Haunch", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "B19": {"v": "L_haunch", "s": {"b": false, "i": true, "fc": "595959", "fs": 10.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "C19": {"v": "=ROUND(B5*0.11, 2)", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": "E2EFDA", "nf": "0.00", "wrap": false, "h": "right", "bd": true}}, "D19": {"v": "m", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "E19": {"v": "0.10*L - 0.12*L", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "F19": {"v": "Area Perkuatan", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "G19": {"v": "Panjang segmen taper dari sudut knee", "s": {"b": false, "i": true, "fc": "595959", "fs": 10.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "A20": {"v": "RAFTER: Tinggi Web di Knee", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "B20": {"v": "h_knee_r", "s": {"b": false, "i": true, "fc": "595959", "fs": 10.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "C20": {"v": "=C14", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": "E2EFDA", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "D20": {"v": "mm", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "E20": {"v": "Sama dengan Knee Kolom", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "F20": {"v": "Sambungan Kaku", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "G20": {"v": "Melanjutkan tinggi web puncak kolom", "s": {"b": false, "i": true, "fc": "595959", "fs": 10.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "A21": {"v": "RAFTER: Tinggi Web Ujung Haunch", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "B21": {"v": "h_haunch_end", "s": {"b": false, "i": true, "fc": "595959", "fs": 10.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "C21": {"v": "=ROUND(C14*0.58, -1)", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": "E2EFDA", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "D21": {"v": "mm", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "E21": {"v": "0.50 s.d 0.65 * h_knee", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "F21": {"v": "Transisi Haunch", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "G21": {"v": "Tinggi web saat haunch selesai", "s": {"b": false, "i": true, "fc": "595959", "fs": 10.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "A22": {"v": "RAFTER: Tinggi Web Tengah Bentang", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "B22": {"v": "h_mid", "s": {"b": false, "i": true, "fc": "595959", "fs": 10.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "C22": {"v": "=ROUND(C14*0.48, -1)", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": "E2EFDA", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "D22": {"v": "mm", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "E22": {"v": "L / 70 s.d L / 80", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "F22": {"v": "Mid-span Rafter", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "G22": {"v": "Tinggi web minimum di tengah bentang", "s": {"b": false, "i": true, "fc": "595959", "fs": 10.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "A23": {"v": "RAFTER: Lebar Flensa Rafter", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "B23": {"v": "b_f_raf", "s": {"b": false, "i": true, "fc": "595959", "fs": 10.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "C23": {"v": "=C16", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": "E2EFDA", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "D23": {"v": "mm", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "E23": {"v": "Sama dengan Kolom", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "F23": {"v": "Konstan Segmen", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "G23": {"v": "Lebar flensa rafter seragam", "s": {"b": false, "i": true, "fc": "595959", "fs": 10.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "A24": {"v": "RAFTER: Tebal Flensa Rafter", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "B24": {"v": "t_f_raf", "s": {"b": false, "i": true, "fc": "595959", "fs": 10.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "C24": {"v": "=C17", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": "E2EFDA", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "D24": {"v": "mm", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "E24": {"v": "tf >= tw", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "F24": {"v": "Pelat Flensa", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "G24": {"v": "Tebal flensa rafter", "s": {"b": false, "i": true, "fc": "595959", "fs": 10.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "A25": {"v": "RAFTER: Tebal Web Rafter", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "B25": {"v": "t_w_raf", "s": {"b": false, "i": true, "fc": "595959", "fs": 10.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "C25": {"v": "=C18", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": "E2EFDA", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "D25": {"v": "mm", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "E25": {"v": "hw / tw \u003c= 260", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "F25": {"v": "Pelat Web", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "G25": {"v": "Tebal web rafter", "s": {"b": false, "i": true, "fc": "595959", "fs": 10.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "A27": {"v": "3. CHECK KELANGSINGAN PELAT & REKOMENDASI STABILITAS (AISC DG25)", "s": {"b": true, "i": false, "fc": "FFFFFF", "fs": 12.0, "fill": "2F5496", "nf": "General", "wrap": false, "h": null, "bd": false}}, "A28": {"v": "Kriteria Evaluasi Stabilitas", "s": {"b": true, "i": false, "fc": "FFFFFF", "fs": 12.0, "fill": "1F4E78", "nf": "General", "wrap": true, "h": "center", "bd": true}}, "B28": {"v": "Nilai Terhitung", "s": {"b": true, "i": false, "fc": "FFFFFF", "fs": 12.0, "fill": "1F4E78", "nf": "General", "wrap": true, "h": "center", "bd": true}}, "C28": {"v": "Batas Izin AISC DG25", "s": {"b": true, "i": false, "fc": "FFFFFF", "fs": 12.0, "fill": "1F4E78", "nf": "General", "wrap": true, "h": "center", "bd": true}}, "D28": {"v": "Status Kelayakan", "s": {"b": true, "i": false, "fc": "FFFFFF", "fs": 12.0, "fill": "1F4E78", "nf": "General", "wrap": true, "h": "center", "bd": true}}, "E28": {"v": "Tindakan / Solusi Enjiniring", "s": {"b": true, "i": false, "fc": "FFFFFF", "fs": 12.0, "fill": "1F4E78", "nf": "General", "wrap": true, "h": "center", "bd": true}}, "A29": {"v": "Kelangsingan Flensa Tekan (bf / 2tf)", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "B29": {"v": "=C16/(2*C17)", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "0.0", "wrap": false, "h": "right", "bd": true}}, "C29": {"v": "\u003c= 18.0", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": "center", "bd": true}}, "D29": {"v": "=IF(B29\u003c=18, \"PASS (OK)\", \"REDUCE BF / ADD TF\")", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": "E2EFDA", "nf": "General", "wrap": false, "h": "center", "bd": true}}, "E29": {"v": "Mencegah tekuk lokal flensa tekan (Local Flange Buckling)", "s": {"b": false, "i": true, "fc": "595959", "fs": 10.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "A30": {"v": "Kekurangan Lebar Flensa (bf >= h/7)", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "B30": {"v": "=C16/C14", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "0.0", "wrap": false, "h": "right", "bd": true}}, "C30": {"v": ">= 0.143 (1/7)", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": "center", "bd": true}}, "D30": {"v": "=IF(B30>=0.1428, \"PASS (OK)\", \"INCREASE BF\")", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": "E2EFDA", "nf": "General", "wrap": false, "h": "center", "bd": true}}, "E30": {"v": "Menjaga kekakuan torsi-lateral penampang tapered", "s": {"b": false, "i": true, "fc": "595959", "fs": 10.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "A31": {"v": "Kelangsingan Web Maksimum (h / tw)", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "B31": {"v": "=C14/C18", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "0.0", "wrap": false, "h": "right", "bd": true}}, "C31": {"v": "\u003c= 260.0", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": "center", "bd": true}}, "D31": {"v": "=IF(B31\u003c=260, \"PASS (OK)\", \"ADD TW THICKNESS\")", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": "E2EFDA", "nf": "General", "wrap": false, "h": "center", "bd": true}}, "E31": {"v": "Batas absolut kelangsingan pelat badan tanpa pengaku", "s": {"b": false, "i": true, "fc": "595959", "fs": 10.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "A32": {"v": "Batas Kelangsingan Web Tanpa Transverse Stiffener (0.40 E / Fy)", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "B32": {"v": "=C14/C18", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "0.0", "wrap": false, "h": "right", "bd": true}}, "C32": {"v": "=0.40*B9/B8", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "0.0", "wrap": false, "h": "center", "bd": true}}, "D32": {"v": "=IF(B32\u003c=C32, \"PASS (UNSTIFFENED)\", \"ADD STIFFENER\")", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": "E2EFDA", "nf": "General", "wrap": false, "h": "center", "bd": true}}, "E32": {"v": "Jika melebihi batas, perlukan pengaku transversal (transverse stiffener)", "s": {"b": false, "i": true, "fc": "595959", "fs": 10.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "A33": {"v": "Sudut Kemiringan Taper Web (Taper Angle Alpha)", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "B33": {"v": "=ATAN((C14-C15)/(B6*1000))*180/PI()", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "0.0", "wrap": false, "h": "right", "bd": true}}, "C33": {"v": "\u003c= 15.0 Derajat", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": "center", "bd": true}}, "D33": {"v": "=IF(B33\u003c=15, \"PASS (OK)\", \"REDUCE TAPER ANGLE\")", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": "E2EFDA", "nf": "General", "wrap": false, "h": "center", "bd": true}}, "E33": {"v": "Kemiringan web dianjurkan \u003c= 15 deg sesuai formula AISC DG25", "s": {"b": false, "i": true, "fc": "595959", "fs": 10.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "A35": {"v": "4. ESTIMASI BERAT DAN TONASE STRUCTURE FRAME (WEIGHT ESTIMATION)", "s": {"b": true, "i": false, "fc": "FFFFFF", "fs": 12.0, "fill": "2F5496", "nf": "General", "wrap": false, "h": null, "bd": false}}, "A36": {"v": "Luas Penampang Puncak (A_knee)", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "C36": {"v": "=2*C16*C17 + (C14-2*C17)*C18", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "D36": {"v": "mm²", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "E36": {"v": "Area penampang terbesar", "s": {"b": false, "i": true, "fc": "595959", "fs": 10.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "A37": {"v": "Luas Penampang Tengah (A_mid/base)", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "C37": {"v": "=2*C16*C17 + (C22-2*C17)*C18", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "D37": {"v": "mm²", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "E37": {"v": "Area penampang terkecil", "s": {"b": false, "i": true, "fc": "595959", "fs": 10.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "A38": {"v": "Estimasi Berat 1 Portal Frame (2 Kolom + 2 Rafter)", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "C38": {"v": "=((C36 + C37)/2 * 7850 / 1E9) * (2*B6 + B5*1.02) * 1000", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "#,##0.0", "wrap": false, "h": "right", "bd": true}}, "D38": {"v": "kg", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "E38": {"v": "Berat baja utama (main frame) per portal", "s": {"b": false, "i": true, "fc": "595959", "fs": 10.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "A39": {"v": "ESTIMASI BERAT BAJA UTAMA PER M² BANGUNAN", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "C39": {"v": "=C38 / (B5 * B7)", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": "D9E1F2", "nf": "0.0", "wrap": false, "h": "right", "bd": true}}, "D39": {"v": "kg/m²", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}, "E39": {"v": "Tonase rata-rata main frame PEB", "s": {"b": false, "i": true, "fc": "595959", "fs": 10.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}}, "merges": ["E28:G28", "D9:G9", "D8:G8", "E31:G31", "A4:G4", "A35:G35", "E30:G30", "D5:G5", "E36:G36", "D10:G10", "E32:G32", "A1:G1", "E37:G37", "D6:G6", "E33:G33", "A27:G27", "E39:G39", "A12:G12", "D7:G7", "A2:G2", "E29:G29", "E38:G38"], "cols": {"A": 42.0, "B": 18.0, "C": 16.0, "D": 12.0, "E": 28.0, "F": 22.0, "G": 45.0}, "rows": {"1": 28.0, "2": 18.0, "3": 10.0, "4": 24.0, "5": 20.0, "6": 20.0, "7": 20.0, "8": 20.0, "9": 20.0, "10": 20.0, "12": 24.0, "13": 25.0, "14": 20.0, "15": 20.0, "16": 20.0, "17": 20.0, "18": 20.0, "19": 20.0, "20": 20.0, "21": 20.0, "22": 20.0, "23": 20.0, "24": 20.0, "25": 20.0, "27": 24.0, "28": 25.0, "29": 20.0, "30": 20.0, "31": 20.0, "32": 20.0, "33": 20.0, "35": 24.0, "36": 20.0, "37": 20.0, "38": 20.0, "39": 22.0}}, {"name": "Tabel Referensi 16m-50m", "cells": {"A1": {"v": "TABEL DIMENSI AWAL PORTAL FRAME PEB (BENTANG 16M S.D 50M)", "s": {"b": true, "i": false, "fc": "FFFFFF", "fs": 16.0, "fill": "1F4E78", "nf": "General", "wrap": false, "h": "left", "bd": false}}, "A2": {"v": "Kenaikan Bertahap Setiap 4 Meter Berdasarkan Standar AISC Steel Design Guide 25", "s": {"b": false, "i": true, "fc": "D9E1F2", "fs": 11.0, "fill": "1F4E78", "nf": "General", "wrap": false, "h": "left", "bd": false}}, "A4": {"v": "Bentang L (m)", "s": {"b": true, "i": false, "fc": "FFFFFF", "fs": 12.0, "fill": "1F4E78", "nf": "General", "wrap": true, "h": "center", "bd": true}}, "B4": {"v": "Tinggi Knee h_knee (mm)", "s": {"b": true, "i": false, "fc": "FFFFFF", "fs": 12.0, "fill": "1F4E78", "nf": "General", "wrap": true, "h": "center", "bd": true}}, "C4": {"v": "Tinggi Base h_base (mm)", "s": {"b": true, "i": false, "fc": "FFFFFF", "fs": 12.0, "fill": "1F4E78", "nf": "General", "wrap": true, "h": "center", "bd": true}}, "D4": {"v": "Tinggi Ujung Haunch h_haunch_end (mm)", "s": {"b": true, "i": false, "fc": "FFFFFF", "fs": 12.0, "fill": "1F4E78", "nf": "General", "wrap": true, "h": "center", "bd": true}}, "E4": {"v": "Tinggi Mid-span h_mid (mm)", "s": {"b": true, "i": false, "fc": "FFFFFF", "fs": 12.0, "fill": "1F4E78", "nf": "General", "wrap": true, "h": "center", "bd": true}}, "F4": {"v": "Lebar Flensa b_f (mm)", "s": {"b": true, "i": false, "fc": "FFFFFF", "fs": 12.0, "fill": "1F4E78", "nf": "General", "wrap": true, "h": "center", "bd": true}}, "G4": {"v": "Tebal Flensa t_f (mm)", "s": {"b": true, "i": false, "fc": "FFFFFF", "fs": 12.0, "fill": "1F4E78", "nf": "General", "wrap": true, "h": "center", "bd": true}}, "H4": {"v": "Tebal Web t_w (mm)", "s": {"b": true, "i": false, "fc": "FFFFFF", "fs": 12.0, "fill": "1F4E78", "nf": "General", "wrap": true, "h": "center", "bd": true}}, "I4": {"v": "Panjang Haunch L_haunch (m)", "s": {"b": true, "i": false, "fc": "FFFFFF", "fs": 12.0, "fill": "1F4E78", "nf": "General", "wrap": true, "h": "center", "bd": true}}, "J4": {"v": "Est. Berat Frame (kg/m²)", "s": {"b": true, "i": false, "fc": "FFFFFF", "fs": 12.0, "fill": "1F4E78", "nf": "General", "wrap": true, "h": "center", "bd": true}}, "A5": {"v": 16, "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": "center", "bd": true}}, "B5": {"v": 450, "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "C5": {"v": 250, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "D5": {"v": 280, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "E5": {"v": 250, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "F5": {"v": 180, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "G5": {"v": 8, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "H5": {"v": 5, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "I5": {"v": 1.8, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "0.0", "wrap": false, "h": "right", "bd": true}}, "J5": {"v": 14.5, "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "0.0", "wrap": false, "h": "right", "bd": true}}, "A6": {"v": 20, "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "General", "wrap": false, "h": "center", "bd": true}}, "B6": {"v": 550, "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "C6": {"v": 250, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "D6": {"v": 340, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "E6": {"v": 300, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "F6": {"v": 190, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "G6": {"v": 10, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "H6": {"v": 5, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "I6": {"v": 2.2, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "0.0", "wrap": false, "h": "right", "bd": true}}, "J6": {"v": 16.8, "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "0.0", "wrap": false, "h": "right", "bd": true}}, "A7": {"v": 24, "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": "center", "bd": true}}, "B7": {"v": 650, "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "C7": {"v": 250, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "D7": {"v": 400, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "E7": {"v": 350, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "F7": {"v": 200, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "G7": {"v": 10, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "H7": {"v": 6, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "I7": {"v": 2.6, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "0.0", "wrap": false, "h": "right", "bd": true}}, "J7": {"v": 19.2, "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "0.0", "wrap": false, "h": "right", "bd": true}}, "A8": {"v": 28, "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "General", "wrap": false, "h": "center", "bd": true}}, "B8": {"v": 750, "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "C8": {"v": 300, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "D8": {"v": 450, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "E8": {"v": 390, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "F8": {"v": 200, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "G8": {"v": 12, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "H8": {"v": 6, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "I8": {"v": 3.1, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "0.0", "wrap": false, "h": "right", "bd": true}}, "J8": {"v": 22, "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "0.0", "wrap": false, "h": "right", "bd": true}}, "A9": {"v": 32, "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": "center", "bd": true}}, "B9": {"v": 850, "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "C9": {"v": 300, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "D9": {"v": 510, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "E9": {"v": 430, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "F9": {"v": 210, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "G9": {"v": 12, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "H9": {"v": 7, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "I9": {"v": 3.5, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "0.0", "wrap": false, "h": "right", "bd": true}}, "J9": {"v": 25.4, "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "0.0", "wrap": false, "h": "right", "bd": true}}, "A10": {"v": 36, "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "General", "wrap": false, "h": "center", "bd": true}}, "B10": {"v": 950, "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "C10": {"v": 300, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "D10": {"v": 570, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "E10": {"v": 490, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "F10": {"v": 230, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "G10": {"v": 14, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "H10": {"v": 7, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "I10": {"v": 4, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "0.0", "wrap": false, "h": "right", "bd": true}}, "J10": {"v": 29.1, "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "0.0", "wrap": false, "h": "right", "bd": true}}, "A11": {"v": 40, "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": "center", "bd": true}}, "B11": {"v": 1080, "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "C11": {"v": 350, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "D11": {"v": 630, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "E11": {"v": 530, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "F11": {"v": 250, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "G11": {"v": 16, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "H11": {"v": 8, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "I11": {"v": 4.4, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "0.0", "wrap": false, "h": "right", "bd": true}}, "J11": {"v": 33.2, "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "0.0", "wrap": false, "h": "right", "bd": true}}, "A12": {"v": 44, "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "General", "wrap": false, "h": "center", "bd": true}}, "B12": {"v": 1180, "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "C12": {"v": 350, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "D12": {"v": 680, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "E12": {"v": 570, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "F12": {"v": 265, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "G12": {"v": 18, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "H12": {"v": 8, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "I12": {"v": 4.8, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "0.0", "wrap": false, "h": "right", "bd": true}}, "J12": {"v": 37.8, "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "0.0", "wrap": false, "h": "right", "bd": true}}, "A13": {"v": 48, "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": "center", "bd": true}}, "B13": {"v": 1280, "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "C13": {"v": 350, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "D13": {"v": 740, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "E13": {"v": 610, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "F13": {"v": 280, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "G13": {"v": 18, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "H13": {"v": 9, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "I13": {"v": 5.3, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "0.0", "wrap": false, "h": "right", "bd": true}}, "J13": {"v": 42.5, "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "0.0", "wrap": false, "h": "right", "bd": true}}, "A14": {"v": 50, "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "General", "wrap": false, "h": "center", "bd": true}}, "B14": {"v": 1330, "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "C14": {"v": 350, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "D14": {"v": 770, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "E14": {"v": 630, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "F14": {"v": 280, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "G14": {"v": 20, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "H14": {"v": 9, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "#,##0", "wrap": false, "h": "right", "bd": true}}, "I14": {"v": 5.5, "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "0.0", "wrap": false, "h": "right", "bd": true}}, "J14": {"v": 45, "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": "F9FBFD", "nf": "0.0", "wrap": false, "h": "right", "bd": true}}, "A16": {"v": "*Catatan: Estimasi berat di atas memperhitungkan komponen main frame (2 kolom + 2 rafter) untuk tinggi eaves 6m - 8m dan jarak portal 6m.", "s": {"b": false, "i": true, "fc": "595959", "fs": 10.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": false}}}, "merges": ["A16:J16", "A1:J1", "A2:J2"], "cols": {"A": 16.0, "B": 18.0, "C": 18.0, "D": 22.0, "E": 20.0, "F": 18.0, "G": 18.0, "H": 16.0, "I": 18.0, "J": 20.0}, "rows": {"1": 28.0, "2": 18.0, "3": 10.0, "4": 28.0, "5": 22.0, "6": 22.0, "7": 22.0, "8": 22.0, "9": 22.0, "10": 22.0, "11": 22.0, "12": 22.0, "13": 22.0, "14": 22.0}}, {"name": "Panduan Teknis AISC DG25", "cells": {"A1": {"v": "PANDUAN TEKNIS & FORMULA KUNCI AISC DESIGN GUIDE 25", "s": {"b": true, "i": false, "fc": "FFFFFF", "fs": 16.0, "fill": "1F4E78", "nf": "General", "wrap": false, "h": "left", "bd": false}}, "A2": {"v": "Prinsip Perancangan dan Batasan Stabilitas Web-Tapered Structural Members", "s": {"b": false, "i": true, "fc": "D9E1F2", "fs": 11.0, "fill": "1F4E78", "nf": "General", "wrap": false, "h": "left", "bd": false}}, "A4": {"v": "1. FILOSOFI & RASIO GEOMETRIS UTAMA", "s": {"b": true, "i": false, "fc": "FFFFFF", "fs": 12.0, "fill": "2F5496", "nf": "General", "wrap": false, "h": null, "bd": false}}, "A5": {"v": "Parameter / Topik", "s": {"b": true, "i": false, "fc": "FFFFFF", "fs": 12.0, "fill": "1F4E78", "nf": "General", "wrap": false, "h": null, "bd": false}}, "B5": {"v": "Batasan / Formula AISC DG25", "s": {"b": true, "i": false, "fc": "FFFFFF", "fs": 12.0, "fill": "1F4E78", "nf": "General", "wrap": false, "h": null, "bd": false}}, "C5": {"v": "Penjelasan & Implikasi Praktis", "s": {"b": true, "i": false, "fc": "FFFFFF", "fs": 12.0, "fill": "1F4E78", "nf": "General", "wrap": false, "h": null, "bd": false}}, "A6": {"v": "Tinggi Web Eaves (h_knee)", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": true}}, "B6": {"v": "L / 35 s.d L / 40", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": "center", "bd": true}}, "C6": {"v": "Merespons momen kombinasi terbesar di knee joint.", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": true}}, "A7": {"v": "Tinggi Web Mid-span (h_mid)", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": true}}, "B7": {"v": "0.45 s.d 0.55 * h_knee (~L/70 - L/80)", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": "center", "bd": true}}, "C7": {"v": "Mengecil di tengah bentang mengikuti penurunan momen.", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": true}}, "A8": {"v": "Lebar Flensa (b_f)", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": true}}, "B8": {"v": "L / 120 s.d L / 150 (atau 0.25 - 0.35 * h_knee)", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": "center", "bd": true}}, "C8": {"v": "Lebar flensa dibuat seragam sepanjang satu segmen fabriksi.", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": true}}, "A9": {"v": "Panjang Haunch (L_haunch)", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": true}}, "B9": {"v": "0.10 * L s.d 0.12 * L", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": "center", "bd": true}}, "C9": {"v": "Panjang segmen perkuatan dari titik knee menuju rafter.", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": true}}, "A11": {"v": "2. BATAS KELANGSINGAN PELAT & STABILITAS (AISC DG25)", "s": {"b": true, "i": false, "fc": "FFFFFF", "fs": 12.0, "fill": "2F5496", "nf": "General", "wrap": false, "h": null, "bd": false}}, "A12": {"v": "Parameter / Topik", "s": {"b": true, "i": false, "fc": "FFFFFF", "fs": 12.0, "fill": "1F4E78", "nf": "General", "wrap": false, "h": null, "bd": false}}, "B12": {"v": "Batasan / Formula AISC DG25", "s": {"b": true, "i": false, "fc": "FFFFFF", "fs": 12.0, "fill": "1F4E78", "nf": "General", "wrap": false, "h": null, "bd": false}}, "C12": {"v": "Penjelasan & Implikasi Praktis", "s": {"b": true, "i": false, "fc": "FFFFFF", "fs": 12.0, "fill": "1F4E78", "nf": "General", "wrap": false, "h": null, "bd": false}}, "A13": {"v": "Kelangsingan Flensa (b_f / 2t_f)", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": true}}, "B13": {"v": "\u003c= 18.0", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": "center", "bd": true}}, "C13": {"v": "Mencegah terjadinya local flange buckling.", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": true}}, "A14": {"v": "Lebar Flensa vs Tinggi Web", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": true}}, "B14": {"v": "b_f >= h / 7 (atau h / 9 jika Lb terkekang)", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": "center", "bd": true}}, "C14": {"v": "Menjaga rigiditas torsi-lateral profil tapered.", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": true}}, "A15": {"v": "Kelangsingan Web Absolut (h / t_w)", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": true}}, "B15": {"v": "\u003c= 260.0", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": "center", "bd": true}}, "C15": {"v": "Batas maksimum kelangsingan pelat badan tanpa pengaku.", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": true}}, "A16": {"v": "Kelangsingan Web Tanpa Pengaku", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": true}}, "B16": {"v": "h / t_w \u003c= 0.40 * E / F_y", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": "center", "bd": true}}, "C16": {"v": "Jika dilampaui, wajib ditambahkan pengaku transversal (stiffener).", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": true}}, "A17": {"v": "Sudut Kemiringan Web (Taper Angle)", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": true}}, "B17": {"v": "\u003c= 15 Derajat", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": "center", "bd": true}}, "C17": {"v": "Sudut kemiringan taper web dijaga agar formula analisis valid.", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": true}}, "A19": {"v": "3. REKOMENDASI BRACING & METODE ANALISIS", "s": {"b": true, "i": false, "fc": "FFFFFF", "fs": 12.0, "fill": "2F5496", "nf": "General", "wrap": false, "h": null, "bd": false}}, "A20": {"v": "Parameter / Topik", "s": {"b": true, "i": false, "fc": "FFFFFF", "fs": 12.0, "fill": "1F4E78", "nf": "General", "wrap": false, "h": null, "bd": false}}, "B20": {"v": "Batasan / Formula AISC DG25", "s": {"b": true, "i": false, "fc": "FFFFFF", "fs": 12.0, "fill": "1F4E78", "nf": "General", "wrap": false, "h": null, "bd": false}}, "C20": {"v": "Penjelasan & Implikasi Praktis", "s": {"b": true, "i": false, "fc": "FFFFFF", "fs": 12.0, "fill": "1F4E78", "nf": "General", "wrap": false, "h": null, "bd": false}}, "A21": {"v": "Flensa Luar (Outer Flange)", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": true}}, "B21": {"v": "Girt / Purlin interval 1.5m - 2.0m", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": "center", "bd": true}}, "C21": {"v": "Menahan tekuk torsi lateral akibat momen gravitasi.", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": true}}, "A22": {"v": "Flensa Dalam (Inner Flange)", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": true}}, "B22": {"v": "Flange Brace dari Purlin ke Inner Flange", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": "center", "bd": true}}, "C22": {"v": "Sangat krusial di area haunch akibat momen terbalik (wind uplift).", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": true}}, "A23": {"v": "Metode Analisis Struktur", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": true}}, "B23": {"v": "Direct Analysis Method (DM)", "s": {"b": true, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": "center", "bd": true}}, "C23": {"v": "Memperhitungkan efek orde kedua (P-Delta & P-delta) serta reduksi kekakuan.", "s": {"b": false, "i": false, "fc": null, "fs": 11.0, "fill": null, "nf": "General", "wrap": false, "h": null, "bd": true}}}, "merges": ["C17:F17", "C23:F23", "C8:F8", "C7:F7", "C13:F13", "A2:F2", "C6:F6", "C15:F15", "A4:F4", "C5:F5", "C14:F14", "A19:F19", "C20:F20", "C16:F16", "C22:F22", "C9:F9", "A11:F11", "A1:F1", "C12:F12", "C21:F21"], "cols": {"A": 32.0, "B": 38.0, "C": 25.0, "D": 25.0, "E": 25.0, "F": 25.0}, "rows": {"1": 28.0, "2": 18.0, "3": 10.0, "4": 24.0, "5": 22.0, "6": 20.0, "7": 20.0, "8": 20.0, "9": 20.0, "11": 24.0, "12": 22.0, "13": 20.0, "14": 20.0, "15": 20.0, "16": 20.0, "17": 20.0, "19": 24.0, "20": 22.0, "21": 20.0, "22": 20.0, "23": 20.0}}];
+const S1 = DATA[0].cells;
+const DEFAULTS = {B5:30,B6:7,B7:6,B8:345,B9:200000,B10:0.8};
+const IN_KEYS = ['B5','B6','B7','B8','B9','B10'];
+const STORE_KEY = 'peb_dg25_saves_v1';
+const LAST_KEY = 'peb_dg25_last_v1';
+
+/* ---------- Perhitungan (port 1:1 dari rumus Excel) ---------- */
+function xround(x, d){ const m = Math.pow(10, d); const r = Math.floor(Math.abs(x)*m + 0.5 + 1e-9)/m; return x<0 ? -r : r; }
+function calc(i){
+  const L=i.B5, H=i.B6, S=i.B7, Fy=i.B8, E=i.B9;
+  const r = {};
+  r.C14 = xround(L*1000/37.5, -1);
+  r.C15 = L<=20 ? 250 : (L<=35 ? 300 : 350);
+  r.C16 = xround(Math.max(r.C14/7, L*1000/135), -1);
+  r.C17 = L<=20 ? 10 : (L<=32 ? 12 : (L<=40 ? 16 : 20));
+  r.C18 = L<=20 ? 6 : (L<=36 ? 7 : (L<=44 ? 8 : 10));
+  r.C19 = xround(L*0.11, 2);
+  r.C20 = r.C14;
+  r.C21 = xround(r.C14*0.58, -1);
+  r.C22 = xround(r.C14*0.48, -1);
+  r.C23 = r.C16; r.C24 = r.C17; r.C25 = r.C18;
+  r.B29 = r.C16/(2*r.C17);
+  r.D29 = r.B29<=18 ? 'PASS (OK)' : 'REDUCE BF / ADD TF';
+  r.B30 = r.C16/r.C14;
+  r.D30 = r.B30>=0.1428 ? 'PASS (OK)' : 'INCREASE BF';
+  r.B31 = r.C14/r.C18;
+  r.D31 = r.B31<=260 ? 'PASS (OK)' : 'ADD TW THICKNESS';
+  r.B32 = r.C14/r.C18;
+  r.C32 = 0.40*E/Fy;
+  r.D32 = r.B32<=r.C32 ? 'PASS (UNSTIFFENED)' : 'ADD STIFFENER';
+  r.B33 = Math.atan((r.C14-r.C15)/(H*1000))*180/Math.PI;
+  r.D33 = r.B33<=15 ? 'PASS (OK)' : 'REDUCE TAPER ANGLE';
+  r.C36 = 2*r.C16*r.C17 + (r.C14-2*r.C17)*r.C18;
+  r.C37 = 2*r.C16*r.C17 + (r.C22-2*r.C17)*r.C18;
+  r.C38 = ((r.C36+r.C37)/2*7850/1e9)*(2*H + L*1.02)*1000;
+  r.C39 = r.C38/(L*S);
+  return r;
+}
+function fmt(v, nf){
+  if (typeof v !== 'number' || !isFinite(v)) return '—';
+  const f = (d,g)=> v.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d,useGrouping:g});
+  switch(nf){ case '#,##0': return f(0,true); case '#,##0.0': return f(1,true); case '0.0': return f(1,false); case '0.00': return f(2,false); default: return (Math.round(v*1e4)/1e4).toString(); }
+}
+const isPass = s => typeof s==='string' && s.startsWith('PASS');
+
+/* ---------- State ---------- */
+let state = Object.assign({}, DEFAULTS);
+function safeGet(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
+let memOnly = false;
+function safeSet(k,v){ try { localStorage.setItem(k,v); return true; } catch(e){ memOnly = true; return false; } }
+let saves = [];
+try { saves = JSON.parse(safeGet(STORE_KEY) || '[]'); if(!Array.isArray(saves)) saves=[]; } catch(e){ saves=[]; }
+try { const l = JSON.parse(safeGet(LAST_KEY)||'null'); if(l) IN_KEYS.forEach(k=>{ if(typeof l[k]==='number' && isFinite(l[k])) state[k]=l[k]; }); } catch(e){}
+
+const $ = id => document.getElementById(id);
+function el(tag, props, ...kids){ const e=document.createElement(tag); if(props) for(const k in props){ if(k==='class') e.className=props[k]; else if(k==='text') e.textContent=props[k]; else e.setAttribute(k,props[k]); } kids.forEach(k=>{ if(k!=null) e.append(k); }); return e; }
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toast.h); toast.h=setTimeout(()=>t.classList.remove('show'),3200); }
+
+/* ---------- Input form ---------- */
+const inputEls = {};
+function buildInputs(){
+  const box = $('inputs');
+  IN_KEYS.forEach(k=>{
+    const row = k.slice(1);
+    const label = S1['A'+row].v, unit = S1['C'+row].v, note = S1['D'+row].v;
+    const inp = el('input',{type:'number',step:'any',inputmode:'decimal',id:'in'+k,'aria-label':label});
+    inp.value = state[k];
+    inp.addEventListener('input',()=>{
+      const v = parseFloat(inp.value);
+      if (isFinite(v) && v>0){ state[k]=v; inp.classList.remove('invalid'); safeSet(LAST_KEY, JSON.stringify(state)); render(); }
+      else { inp.classList.add('invalid'); }
+    });
+    inputEls[k]=inp;
+    box.append(el('div',{class:'field'}, el('label',{for:'in'+k,text:label}), el('div',{class:'inrow'},inp,el('span',{class:'unit',text:unit})), el('div',{class:'note',text:note})));
+  });
+}
+function syncInputs(){ IN_KEYS.forEach(k=>{ inputEls[k].value=state[k]; inputEls[k].classList.remove('invalid'); }); }
+
+/* ---------- Render ---------- */
+function td(text, cls){ return el('td',cls?{class:cls}:null, text==null?'':String(text)); }
+function badge(s){ return el('span',{class:'badge '+(isPass(s)?'ok':'bad'),text:s}); }
+function render(){
+  const r = calc(state);
+  const L = state.B5;
+  const w = $('rangeWarn');
+  if (L<16 || L>50){ w.textContent='Bentang di luar rentang acuan 16–50 m; rumus tetap dihitung, tetapi hasilnya ekstrapolasi.'; w.classList.remove('hidden'); } else w.classList.add('hidden');
+
+  // KPI
+  const k = $('kpis'); k.replaceChildren();
+  const kp = [['Tinggi web knee',r.C14,'mm','#,##0'],['Flensa (b × t)',r.C16+' × '+r.C17,'mm',null],['Berat 1 portal',r.C38,'kg','#,##0'],['Berat baja utama',r.C39,'kg/m²','0.00']];
+  kp.forEach(([l,v,u,nf])=>k.append(el('div',{class:'kpi'},el('div',{class:'l',text:l}),el('div',{class:'v',text:nf?fmt(v,nf):v}),el('div',{class:'u',text:u}))));
+
+  // Bagian 2
+  const t = $('tRes'); t.replaceChildren();
+  const hr = el('tr'); ['A','B','C','D','E','F','G'].forEach(c=>hr.append(el('th',{text:S1[c+'13'].v}))); t.append(el('thead',null,hr));
+  const tb = el('tbody');
+  for(let row=14; row<=25; row++){
+    const tr = el('tr');
+    tr.append(td(S1['A'+row].v), el('td',{class:'sym',text:S1['B'+row].v}), td(fmt(r['C'+row],S1['C'+row].s.nf),'n'), td(S1['D'+row].v,'c'), td(S1['E'+row].v), td(S1['F'+row].v), td(S1['G'+row].v));
+    tb.append(tr);
+  }
+  t.append(tb);
+
+  // Bagian 3
+  const c = $('tChk'); c.replaceChildren();
+  const ch = el('tr'); ['A','B','C','D','E'].forEach(x=>ch.append(el('th',{text:S1[x+'28'].v}))); c.append(el('thead',null,ch));
+  const cb = el('tbody');
+  for(let row=29; row<=33; row++){
+    const lim = row===32 ? '<= '+fmt(r.C32,'0.0') : S1['C'+row].v;
+    const nf = S1['B'+row].s.nf;
+    const tr = el('tr'); tr.append(td(S1['A'+row].v), td(fmt(r['B'+row],nf==='General'?'0.00':nf),'n'), td(lim,'c'), el('td',{class:'c'},badge(r['D'+row])), td(S1['E'+row].v));
+    cb.append(tr);
+  }
+  c.append(cb);
+
+  // Bagian 4
+  const wt = $('tWt'); wt.replaceChildren();
+  const wb = el('tbody');
+  for(let row=36; row<=39; row++){
+    const tr = el('tr'); tr.append(td(S1['A'+row].v), td(fmt(r['C'+row], row===39?'0.00':'#,##0'),'n'), td(S1['D'+row].v,'c'), td(S1['E'+row].v));
+    wb.append(tr);
+  }
+  wt.append(wb);
+  highlightRef();
+  return r;
+}
+
+/* ---------- Tabel statis (Referensi & Panduan) ---------- */
+const colL = n=>{ let s=''; n++; while(n>0){ const m=(n-1)%26; s=String.fromCharCode(65+m)+s; n=Math.floor((n-1)/26);} return s; };
+function colN(s){ let n=0; for(const ch of s) n=n*26+ch.charCodeAt(0)-64; return n-1; }
+function parseRef(a){ const m=/^([A-Z]+)(\d+)$/.exec(a); return {c:colN(m[1]), r:+m[2]}; }
+function renderStatic(sheet, table, opts){
+  const cells = sheet.cells, merges = sheet.merges.map(m=>{ const [a,b]=m.split(':'); return {a:parseRef(a),b:parseRef(b)}; });
+  let maxR=0,maxC=0; for(const a in cells){ const p=parseRef(a); maxR=Math.max(maxR,p.r); maxC=Math.max(maxC,p.c); }
+  const skip=new Set(), span={};
+  merges.forEach(m=>{ span[m.a.r+','+m.a.c]={cs:m.b.c-m.a.c+1,rs:m.b.r-m.a.r+1}; for(let r=m.a.r;r<=m.b.r;r++) for(let c=m.a.c;c<=m.b.c;c++) if(r!==m.a.r||c!==m.a.c) skip.add(r+','+c); });
+  table.replaceChildren();
+  const tb = el('tbody');
+  for(let r=1;r<=maxR;r++){
+    const rowCells=[]; let any=false;
+    for(let c=0;c<=maxC;c++){ if(cells[colL(c)+r] && cells[colL(c)+r].v!=null) any=true; }
+    if(!any) continue;
+    const tr = el('tr'); tr.dataset.row = r;
+    const first = cells['A'+r];
+    let kind='';
+    if(r===1) kind='title'; else if(r===2) kind='sub';
+    else if(span[r+',0'] && span[r+',0'].cs===maxC+1) kind='grp';
+    else if(first && first.s.fill==='1F4E78') kind='hdr';
+    if(kind==='title'||kind==='sub') continue; // judul sudah ada di header halaman
+    if(kind==='grp') tr.className='grp';
+    for(let c=0;c<=maxC;c++){
+      if(skip.has(r+','+c)) continue;
+      const cell = cells[colL(c)+r]; const sp=span[r+','+c];
+      const v = cell? cell.v : null;
+      let node;
+      if(kind==='hdr') node = el('th',{text:v==null?'':v});
+      else { const isNum = typeof v==='number'; node = el('td', isNum?{class:'n'}:null, v==null?'':(isNum? fmt(v, cell.s.nf==='General'?'General':cell.s.nf) : String(v))); }
+      if(sp){ if(sp.cs>1) node.colSpan=sp.cs; if(sp.rs>1) node.rowSpan=sp.rs; }
+      tr.append(node);
+    }
+    tb.append(tr);
+  }
+  table.append(tb);
+}
+function highlightRef(){
+  const tb = $('tRef').querySelector('tbody'); if(!tb) return;
+  let best=null, bd=1e9;
+  tb.querySelectorAll('tr').forEach(tr=>{ tr.classList.remove('hl'); const v=parseFloat(tr.firstChild.textContent); if(isFinite(v)){ const d=Math.abs(v-state.B5); if(d<bd){bd=d;best=tr;} } });
+  if(best && state.B5>=16 && state.B5<=50) best.classList.add('hl');
+}
+
+/* ---------- Simpan / muat ---------- */
+function persist(){ const ok = safeSet(STORE_KEY, JSON.stringify(saves)); $('saveInfo').textContent = ok ? 'Tersimpan di browser ini. Gunakan "Cadangkan (JSON)" agar dapat dipindah ke perangkat lain.' : 'Penyimpanan browser tidak tersedia di tampilan ini; hasil hanya bertahan selama halaman terbuka. Gunakan Ekspor/Cadangkan agar tidak hilang.'; }
+function fmtDate(ts){ try{ return new Date(ts).toLocaleString('id-ID',{dateStyle:'medium',timeStyle:'short'}); }catch(e){ return ''; } }
+function summary(r){ return {h_knee:r.C14,h_base:r.C15,b_f:r.C16,t_f:r.C17,t_w:r.C18,L_haunch:r.C19,h_haunch_end:r.C21,h_mid:r.C22,berat_portal_kg:Math.round(r.C38*10)/10,berat_kg_m2:Math.round(r.C39*100)/100}; }
+function renderSaved(){
+  const ul=$('savedList'); ul.replaceChildren();
+  saves.slice().sort((a,b)=>b.ts-a.ts).forEach(s=>{
+    const li = el('li');
+    li.append(el('div',{class:'t',text:s.name}));
+    li.append(el('div',{class:'m',text:`${fmtDate(s.ts)} · L=${s.inputs.B5} m, H=${s.inputs.B6} m, S=${s.inputs.B7} m · ${s.result.berat_kg_m2} kg/m²`}));
+    const b = el('div',{class:'btns'});
+    const bl = el('button',{class:'b sm',type:'button',text:'Muat'}); bl.onclick=()=>{ IN_KEYS.forEach(k=>state[k]=s.inputs[k]); $('saveName').value=s.name; syncInputs(); safeSet(LAST_KEY,JSON.stringify(state)); render(); toast('Dimuat: '+s.name); };
+    const bx = el('button',{class:'b sec sm',type:'button',text:'Excel'}); bx.onclick=()=>exportXlsx(s.inputs,s.name);
+    const bd = el('button',{class:'b danger sm',type:'button',text:'Hapus'}); bd.onclick=()=>{ if(bd.dataset.armed){ saves=saves.filter(x=>x.id!==s.id); persist(); renderSaved(); toast('Dihapus'); } else { bd.dataset.armed=1; bd.textContent='Yakin hapus?'; setTimeout(()=>{ bd.dataset.armed=''; bd.textContent='Hapus'; },3000); } };
+    b.append(bl,bx,bd); li.append(b); ul.append(li);
+  });
+  const has = saves.length>0;
+  $('noSaved').classList.toggle('hidden',has);
+  $('xlsxAll').disabled = !has; $('jsonOut').disabled = !has;
+}
+function doSave(){
+  const r = calc(state);
+  const name = ($('saveName').value.trim()) || ('Desain L='+state.B5+' m');
+  const ex = saves.find(s=>s.name===name);
+  const rec = {id: ex?ex.id:(Date.now().toString(36)+Math.random().toString(36).slice(2,6)), name, ts:Date.now(), inputs:Object.assign({},state), result:summary(r)};
+  if(ex) Object.assign(ex,rec); else saves.push(rec);
+  persist(); renderSaved(); toast(ex?'Diperbarui: '+name:'Tersimpan: '+name);
+}
+
+/* ---------- File output ---------- */
+async function saveFile(filename, data){
+  let dl=null; try{ dl = await claude.use('downloads'); }catch(e){}
+  if(dl){ try{ await dl.save({filename,data}); toast('Berkas disimpan: '+filename); }catch(e){ if(e&&e.code==='declined') toast('Dibatalkan'); else toast('Gagal menyimpan ('+((e&&e.code)||'error')+')'); } return; }
+  try{ const blob=new Blob([data]); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; document.body.append(a); a.click(); a.remove(); toast('Mengunduh '+filename); }catch(e){ toast('Unduhan tidak tersedia di tampilan ini'); }
+}
+function backupJson(){ saveFile('peb-dg25-hasil-tersimpan.json', JSON.stringify({app:'peb-dg25',version:1,saves},null,2)); }
+function importJson(file){
+  const fr=new FileReader();
+  fr.onload=()=>{ try{
+    const o=JSON.parse(fr.result); const list=Array.isArray(o)?o:o.saves; if(!Array.isArray(list)) throw 0;
+    let n=0; list.forEach(s=>{ if(!s||typeof s.name!=='string'||!s.inputs) return; if(!IN_KEYS.every(k=>typeof s.inputs[k]==='number'&&isFinite(s.inputs[k]))) return;
+      const r=calc(s.inputs); const rec={id:String(s.id||Date.now().toString(36)+n),name:s.name.slice(0,80),ts:+s.ts||Date.now(),inputs:IN_KEYS.reduce((a,k)=>(a[k]=s.inputs[k],a),{}),result:summary(r)};
+      const ex=saves.find(x=>x.name===rec.name); if(ex) Object.assign(ex,rec); else saves.push(rec); n++; });
+    persist(); renderSaved(); toast(n+' hasil diimpor');
+  }catch(e){ toast('Berkas JSON tidak valid'); } };
+  fr.readAsText(file);
+}
+
+/* ---------- Penulis XLSX (ZIP tanpa kompresi, tanpa dependensi) ---------- */
+const CRC=(()=>{ const t=new Uint32Array(256); for(let n=0;n<256;n++){ let c=n; for(let k=0;k<8;k++) c=c&1?0xEDB88320^(c>>>1):c>>>1; t[n]=c>>>0; } return t; })();
+function crc32(b){ let c=0xFFFFFFFF; for(let i=0;i<b.length;i++) c=CRC[(c^b[i])&255]^(c>>>8); return (c^0xFFFFFFFF)>>>0; }
+function zip(files){
+  const enc=new TextEncoder(), parts=[], cen=[]; let off=0;
+  const d=new Date(), dt=((d.getFullYear()-1980)<<9)|((d.getMonth()+1)<<5)|d.getDate(), tm=(d.getHours()<<11)|(d.getMinutes()<<5)|(d.getSeconds()>>1);
+  files.forEach(f=>{
+    const name=enc.encode(f.name), data=enc.encode(f.data), crc=crc32(data);
+    const lh=new DataView(new ArrayBuffer(30)); lh.setUint32(0,0x04034b50,true); lh.setUint16(4,20,true); lh.setUint16(6,0x0800,true); lh.setUint16(8,0,true); lh.setUint16(10,tm,true); lh.setUint16(12,dt,true); lh.setUint32(14,crc,true); lh.setUint32(18,data.length,true); lh.setUint32(22,data.length,true); lh.setUint16(26,name.length,true); lh.setUint16(28,0,true);
+    parts.push(new Uint8Array(lh.buffer),name,data);
+    const ch=new DataView(new ArrayBuffer(46)); ch.setUint32(0,0x02014b50,true); ch.setUint16(4,20,true); ch.setUint16(6,20,true); ch.setUint16(8,0x0800,true); ch.setUint16(10,0,true); ch.setUint16(12,tm,true); ch.setUint16(14,dt,true); ch.setUint32(16,crc,true); ch.setUint32(20,data.length,true); ch.setUint32(24,data.length,true); ch.setUint16(28,name.length,true); ch.setUint32(42,off,true);
+    cen.push(new Uint8Array(ch.buffer),name);
+    off+=30+name.length+data.length;
+  });
+  let cl=0; cen.forEach(c=>cl+=c.length);
+  const end=new DataView(new ArrayBuffer(22)); end.setUint32(0,0x06054b50,true); end.setUint16(8,files.length,true); end.setUint16(10,files.length,true); end.setUint32(12,cl,true); end.setUint32(16,off,true);
+  const all=[...parts,...cen,new Uint8Array(end.buffer)]; let tot=0; all.forEach(a=>tot+=a.length);
+  const out=new Uint8Array(tot); let p=0; all.forEach(a=>{ out.set(a,p); p+=a.length; }); return out;
+}
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function buildXlsx(inputs, projName, history){
+  const r = calc(inputs);
+  // style registry
+  const fonts=[], fills=[], nfs={}, xfs=[], fontIdx={}, fillIdx={}, xfIdx={};
+  let nextNf=164;
+  const BUILTIN={'General':0,'0.00':2,'#,##0':3};
+  function fontId(s){ const k=JSON.stringify([s.b,s.i,s.fc,s.fs]); if(!(k in fontIdx)){ fontIdx[k]=fonts.length; fonts.push(`<font>${s.b?'<b/>':''}${s.i?'<i/>':''}<sz val="${s.fs||11}"/><color rgb="FF${s.fc||'000000'}"/><name val="Calibri"/></font>`); } return fontIdx[k]; }
+  function fillId(s){ if(!s.fill) return 0; if(!(s.fill in fillIdx)){ fillIdx[s.fill]=fills.length+2; fills.push(`<fill><patternFill patternType="solid"><fgColor rgb="FF${s.fill}"/><bgColor indexed="64"/></patternFill></fill>`); } return fillIdx[s.fill]; }
+  function nfId(nf){ if(nf in BUILTIN) return BUILTIN[nf]; if(!(nf in nfs)) nfs[nf]=nextNf++; return nfs[nf]; }
+  function xf(s){ s=s||{b:false,i:false,fc:null,fs:11,fill:null,nf:'General',wrap:false,h:null,bd:false}; const k=JSON.stringify(s); if(!(k in xfIdx)){ xfIdx[k]=xfs.length;
+      xfs.push(`<xf numFmtId="${nfId(s.nf||'General')}" fontId="${fontId(s)}" fillId="${fillId(s)}" borderId="${s.bd?1:0}" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment${s.h?` horizontal="${s.h}"`:''} vertical="center"${s.wrap?' wrapText="1"':''}/></xf>`); } return xfIdx[k]; }
+  xf(null);
+  const sheetsXml=[], names=[];
+  const COLS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const parse=a=>{ const m=/^([A-Z]+)(\d+)$/.exec(a); return {c:colN(m[1]), r:+m[2]}; };
+  DATA.forEach((sh,si)=>{
+    const cells = Object.assign({}, sh.cells);
+    if(si===0){
+      IN_KEYS.forEach(k=>{ cells[k]=Object.assign({},cells[k],{v:inputs[k]}); });
+      cells.A3={v:'Proyek: '+projName+'  |  Dihitung: '+new Date().toLocaleString('id-ID'), s:{b:false,i:true,fc:'595959',fs:10,fill:null,nf:'General',wrap:false,h:null,bd:false}};
+    }
+    const rows={}; for(const a in cells){ const p=parse(a); (rows[p.r]=rows[p.r]||[]).push([p.c,a,cells[a]]); }
+    let x='';
+    Object.keys(rows).map(Number).sort((a,b)=>a-b).forEach(rn=>{
+      const ht = sh.rows[rn]; x+=`<row r="${rn}"${ht?` ht="${ht}" customHeight="1"`:''}>`;
+      rows[rn].sort((a,b)=>a[0]-b[0]).forEach(([c,a,cell])=>{
+        const s=xf(cell.s), v=cell.v;
+        if(v==null) x+=`<c r="${a}" s="${s}"/>`;
+        else if(typeof v==='number') x+=`<c r="${a}" s="${s}"><v>${v}</v></c>`;
+        else if(typeof v==='string' && v.startsWith('=')){
+          const cv = si===0 ? r[a] : undefined;
+          if(typeof cv==='string') x+=`<c r="${a}" s="${s}" t="str"><f>${esc(v.slice(1))}</f><v>${esc(cv)}</v></c>`;
+          else if(typeof cv==='number' && isFinite(cv)) x+=`<c r="${a}" s="${s}"><f>${esc(v.slice(1))}</f><v>${cv}</v></c>`;
+          else x+=`<c r="${a}" s="${s}"><f>${esc(v.slice(1))}</f></c>`;
+        } else x+=`<c r="${a}" s="${s}" t="inlineStr"><is><t xml:space="preserve">${esc(v)}</t></is></c>`;
+      });
+      x+='</row>';
+    });
+    const cols = Object.keys(sh.cols).map(k=>`<col min="${colN(k)+1}" max="${colN(k)+1}" width="${sh.cols[k]}" customWidth="1"/>`).join('');
+    const mg = sh.merges.length?`<mergeCells count="${sh.merges.length}">${sh.merges.map(m=>`<mergeCell ref="${m}"/>`).join('')}</mergeCells>`:'';
+    sheetsXml.push(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><cols>${cols}</cols><sheetData>${x}</sheetData>${mg}</worksheet>`);
+    names.push(sh.name);
+  });
+  // Riwayat simpanan
+  if(history && history.length){
+    const hdr=['Nama','Tanggal','L (m)','H eaves (m)','S (m)','Fy (MPa)','E (MPa)','q (kN/m²)','h_knee (mm)','h_base (mm)','b_f (mm)','t_f (mm)','t_w (mm)','L_haunch (m)','h_haunch_end (mm)','h_mid (mm)','Berat portal (kg)','Berat (kg/m²)'];
+    const hs=xf({b:true,i:false,fc:'FFFFFF',fs:11,fill:'1F4E78',nf:'General',wrap:true,h:'center',bd:true});
+    const ts=xf({b:false,i:false,fc:null,fs:11,fill:null,nf:'General',wrap:false,h:null,bd:true});
+    const ns=xf({b:false,i:false,fc:null,fs:11,fill:null,nf:'General',wrap:false,h:'right',bd:true});
+    let x=`<row r="1" ht="32" customHeight="1">${hdr.map((h,i)=>`<c r="${colL(i)}1" s="${hs}" t="inlineStr"><is><t>${esc(h)}</t></is></c>`).join('')}</row>`;
+    history.slice().sort((a,b)=>b.ts-a.ts).forEach((s,i)=>{
+      const rr=calc(s.inputs), n=i+2, i_=s.inputs;
+      const vals=[s.name,fmtDate(s.ts),i_.B5,i_.B6,i_.B7,i_.B8,i_.B9,i_.B10,rr.C14,rr.C15,rr.C16,rr.C17,rr.C18,rr.C19,rr.C21,rr.C22,Math.round(rr.C38*10)/10,Math.round(rr.C39*100)/100];
+      x+=`<row r="${n}">`+vals.map((v,c)=>typeof v==='number'?`<c r="${colL(c)}${n}" s="${ns}"><v>${v}</v></c>`:`<c r="${colL(c)}${n}" s="${ts}" t="inlineStr"><is><t xml:space="preserve">${esc(v)}</t></is></c>`).join('')+'</row>';
+    });
+    const cols=hdr.map((h,i)=>`<col min="${i+1}" max="${i+1}" width="${i<2?26:14}" customWidth="1"/>`).join('');
+    sheetsXml.push(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><cols>${cols}</cols><sheetData>${x}</sheetData></worksheet>`);
+    names.push('Riwayat Simpanan');
+  }
+  const styles=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="${Object.keys(nfs).length}">${Object.keys(nfs).map(k=>`<numFmt numFmtId="${nfs[k]}" formatCode="${esc(k)}"/>`).join('')}</numFmts><fonts count="${fonts.length}">${fonts.join('')}</fonts><fills count="${fills.length+2}"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill>${fills.join('')}</fills><borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left style="thin"><color rgb="FFBFBFBF"/></left><right style="thin"><color rgb="FFBFBFBF"/></right><top style="thin"><color rgb="FFBFBFBF"/></top><bottom style="thin"><color rgb="FFBFBFBF"/></bottom><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="${xfs.length}">${xfs.join('')}</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
+  const n=names.length;
+  const files=[
+    {name:'[Content_Types].xml',data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${names.map((_,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')}</Types>`},
+    {name:'_rels/.rels',data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`},
+    {name:'xl/workbook.xml',data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>${names.map((nm,i)=>`<sheet name="${esc(nm)}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join('')}</sheets><calcPr calcId="191029" fullCalcOnLoad="1"/></workbook>`},
+    {name:'xl/_rels/workbook.xml.rels',data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${names.map((_,i)=>`<Relationship Id="rId${i+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join('')}<Relationship Id="rId${n+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`},
+    {name:'xl/styles.xml',data:styles},
+    ...sheetsXml.map((x,i)=>({name:`xl/worksheets/sheet${i+1}.xml`,data:x}))
+  ];
+  return zip(files);
+}
+function slug(s){ return s.normalize('NFKD').replace(/[^\w\s-]/g,'').trim().replace(/\s+/g,'-').slice(0,50)||'desain'; }
+function exportXlsx(inputs, name, withHistory){
+  const proj = name || ($('saveName').value.trim()) || 'Tanpa nama';
+  try{ const bytes = buildXlsx(inputs, proj, withHistory?saves:saves); saveFile('Kalkulator_PEB_'+slug(proj)+'.xlsx', bytes); }
+  catch(e){ console.error(e); toast('Gagal membuat Excel'); }
+}
+
+/* ---------- Init ---------- */
+function setTab(i){
+  [0,1,2].forEach(n=>{ $('p'+n).classList.toggle('hidden',n!==i); $('t'+n).setAttribute('aria-selected',n===i?'true':'false'); });
+  if(i===1) highlightRef();
+}
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>setTab(+b.dataset.tab)));
+buildInputs();
+renderStatic(DATA[1], $('tRef'));
+renderStatic(DATA[2], $('tGuide'));
+$('refNote').textContent = (DATA[1].cells.A16||{}).v || '';
+// hapus baris catatan dari tabel referensi (ditampilkan terpisah)
+(()=>{ const tr=$('tRef').querySelector('tr[data-row="16"]'); if(tr) tr.remove(); })();
+$('reset').onclick=()=>{ state=Object.assign({},DEFAULTS); syncInputs(); safeSet(LAST_KEY,JSON.stringify(state)); render(); };
+$('save').onclick=doSave;
+$('xlsx').onclick=()=>exportXlsx(state,null,true);
+$('xlsxAll').onclick=()=>exportXlsx(state,null,true);
+$('jsonOut').onclick=backupJson;
+$('jsonIn').onclick=()=>$('jsonFile').click();
+$('jsonFile').onchange=e=>{ if(e.target.files[0]) importJson(e.target.files[0]); e.target.value=''; };
+$('saveName').addEventListener('keydown',e=>{ if(e.key==='Enter') doSave(); });
+persist(); renderSaved(); render();
+if(typeof window!=='undefined') window.__calc = calc;
+</script>
+</body>
+</html>
